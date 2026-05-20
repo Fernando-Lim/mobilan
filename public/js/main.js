@@ -1,63 +1,147 @@
-(function ($) {
+(function () {
     "use strict";
 
-    // Spinner
-    var spinner = function () {
-        setTimeout(function () {
-            if ($('#spinner').length > 0) {
-                $('#spinner').removeClass('show');
-            }
-        }, 1);
+    const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const spinner = document.getElementById("spinner");
+    const navbar = document.querySelector(".navbar.sticky-top");
+    const backToTop = document.querySelector(".back-to-top");
+    const navLinks = document.querySelectorAll(".navbar-nav a[href^='#']");
+    const collapseEl = document.getElementById("navbarCollapse");
+    const collapse = collapseEl && window.bootstrap ? new bootstrap.Collapse(collapseEl, { toggle: false }) : null;
+
+    const scrollToTarget = (target) => {
+        if (!target) return;
+        target.scrollIntoView({
+            behavior: prefersReducedMotion ? "auto" : "smooth",
+            block: "start"
+        });
     };
-    spinner();
-    
-    
-    // Initiate the wowjs
-    new WOW().init();
 
+    const setActiveLink = (hash) => {
+        navLinks.forEach((link) => {
+            link.classList.toggle("active", link.getAttribute("href") === hash);
+        });
+    };
 
-    // Sticky Navbar
-    $(window).scroll(function () {
-        if ($(this).scrollTop() > 300) {
-            $('.sticky-top').addClass('shadow-sm').css('top', '0px');
-        } else {
-            $('.sticky-top').removeClass('shadow-sm').css('top', '-100px');
+    const syncScrollUi = () => {
+        const isScrolled = window.scrollY > 72;
+
+        if (navbar) {
+            navbar.classList.toggle("shadow-sm", isScrolled);
         }
-    });
-    
-    
-    // Back to top button
-    $(window).scroll(function () {
-        if ($(this).scrollTop() > 300) {
-            $('.back-to-top').fadeIn('slow');
-        } else {
-            $('.back-to-top').fadeOut('slow');
+
+        if (backToTop) {
+            backToTop.classList.toggle("show", window.scrollY > 260);
         }
-    });
-    $('.back-to-top').click(function () {
-        $('html, body').animate({scrollTop: 0}, 1500, 'easeInOutExpo');
-        return false;
-    });
 
+        if (window.scrollY < 120) {
+            setActiveLink("#top");
+        }
+    };
 
-    
-})(jQuery);
+    const hideSpinner = () => {
+        if (spinner) {
+            spinner.classList.remove("show");
+        }
+    };
 
-  function openModal(modalId) {
-    var modal = document.getElementById(modalId);
-    modal.style.display = "block";
-  }
-
-  var closeButtons = document.getElementsByClassName("close");
-  for (var i = 0; i < closeButtons.length; i++) {
-    closeButtons[i].addEventListener("click", function() {
-      var modal = this.parentNode.parentNode;
-      modal.style.display = "none";
-    });
-  }
-
-  window.onclick = function(event) {
-    if (event.target.classList.contains("modal")) {
-      event.target.style.display = "none";
+    if (document.readyState === "loading") {
+        document.addEventListener("DOMContentLoaded", hideSpinner, { once: true });
+    } else {
+        hideSpinner();
     }
-  };
+
+    if (window.WOW) {
+        new WOW({
+            mobile: false,
+            live: false
+        }).init();
+    }
+
+    document.querySelectorAll("a[href^='#']").forEach((anchor) => {
+        anchor.addEventListener("click", (event) => {
+            const href = anchor.getAttribute("href");
+            if (!href || href === "#") {
+                event.preventDefault();
+                return;
+            }
+
+            const target = href === "#top" ? document.documentElement : document.querySelector(href);
+
+            if (!target) return;
+
+            event.preventDefault();
+            scrollToTarget(target);
+
+            if (anchor.closest(".navbar-nav") && collapse) {
+                collapse.hide();
+            }
+        });
+    });
+
+    if (backToTop) {
+        backToTop.addEventListener("click", () => {
+            window.scrollTo({
+                top: 0,
+                behavior: prefersReducedMotion ? "auto" : "smooth"
+            });
+        });
+    }
+
+    if ("IntersectionObserver" in window) {
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach((entry) => {
+                if (entry.isIntersecting) {
+                    setActiveLink(`#${entry.target.id}`);
+                }
+            });
+        }, {
+            rootMargin: "-35% 0px -55% 0px",
+            threshold: 0
+        });
+
+        navLinks.forEach((link) => {
+            const id = link.getAttribute("href").slice(1);
+            const section = id !== "top" ? document.getElementById(id) : null;
+
+            if (section) {
+                observer.observe(section);
+            }
+        });
+    }
+
+    let ticking = false;
+    window.addEventListener("scroll", () => {
+        if (!ticking) {
+            window.requestAnimationFrame(() => {
+                syncScrollUi();
+                ticking = false;
+            });
+            ticking = true;
+        }
+    }, { passive: true });
+
+    syncScrollUi();
+})();
+
+function sendEmail(event) {
+    event.preventDefault();
+
+    const name = document.getElementById("name").value.trim();
+    const email = document.getElementById("email").value.trim();
+    const course = document.getElementById("course").value;
+    const car = document.getElementById("car").value;
+    const message = document.getElementById("message").value.trim();
+
+    if (!name || !email || !course || !car || !message) {
+        alert("Please fill out all fields before sending the email.");
+        return;
+    }
+
+    const subject = encodeURIComponent("Driving Course Information Request");
+    const body = encodeURIComponent(
+        `Name: ${name}\nEmail: ${email}\nCourse Type: ${course}\nCar: ${car}\nMessage:\n${message}`
+    );
+
+    window.location.href = `mailto:admin@mobilan.com?subject=${subject}&body=${body}`;
+}

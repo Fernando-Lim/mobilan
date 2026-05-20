@@ -325,25 +325,25 @@
     
     /* Restore full day names on larger screens */
     .schedule-table thead tr th:nth-child(1):before {
-        content: "Senin";
+        content: "Monday";
     }
     .schedule-table thead tr th:nth-child(2):before {
-        content: "Selasa";
+        content: "Tuesday";
     }
     .schedule-table thead tr th:nth-child(3):before {
-        content: "Rabu";
+        content: "Wednesday";
     }
     .schedule-table thead tr th:nth-child(4):before {
-        content: "Kamis";
+        content: "Thursday";
     }
     .schedule-table thead tr th:nth-child(5):before {
-        content: "Jumat";
+        content: "Friday";
     }
     .schedule-table thead tr th:nth-child(6):before {
-        content: "Sabtu";
+        content: "Saturday";
     }
     .schedule-table thead tr th:nth-child(7):before {
-        content: "Minggu";
+        content: "Sunday";
     }
     
     .schedule-table thead tr th:nth-child(1),
@@ -368,7 +368,7 @@
     
     /* Restore full badge text on larger screens */
     .schedule-badge.schedule-available:before {
-        content: "Ada Kelas";
+        content: "Available";
     }
     
     .schedule-badge.schedule-available {
@@ -483,7 +483,7 @@
         });
     
         // List of all days
-        const allDays = ["Sen", "Sel", "Rab", "Kam", "Jum", "Sab", "Min"];
+        const allDays = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
     
         window.openScheduleModal = function(title, availableDays) {
             const modalTitle = modal.querySelector('.schedule-modal-title');
@@ -513,10 +513,10 @@
                     // Check if the day is in the availableDays array
                     if (availableDays.includes(day)) {
                         span.classList.add('schedule-badge', 'schedule-available');
-                        span.textContent = 'Ada';
+                        span.textContent = 'Yes';
                     } else {
                         span.classList.add('schedule-badge', 'schedule-unavailable');
-                        span.textContent = 'Tidak Ada';
+                        span.textContent = 'No';
                     }
     
                     td.appendChild(span);
@@ -536,4 +536,3 @@
     
     
     
-
